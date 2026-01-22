@@ -1,0 +1,5 @@
+venv/
+llm_backlog_summaries
+__pycache__/
+config.yaml
+*.log

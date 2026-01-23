@@ -4,6 +4,8 @@
 # Set your project directory where venv and the script live:
 PROJECT_DIR="/home/zzhou/code"
 
+cd "$PROJECT_DIR" || { echo "Project directory not found! Exiting."; exit 1; }
+
 # Activate venv
 source "$PROJECT_DIR/venv/bin/activate"
 

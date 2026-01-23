@@ -23,3 +23,7 @@ pip install -r requirements.txt
 
 crontab -e
 0 17 \* \* 1-5 /home/user/dir/automate_script.sh >> /home/user/dir/automation.log 2>&1
+
+# automating script
+
+project directory will need to change to the home directory you're in

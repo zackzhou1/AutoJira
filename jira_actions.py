@@ -1,6 +1,8 @@
+import json
 def get_in_progress_issues(jira, user_account_id):
     jql = f'assignee = "{user_account_id}" AND status = "In Progress"'
-    return jira.search_issues(jql, maxResults=100)
+    print(jql)
+    return jira.enhanced_search_issues(jql)
 
 def add_comment_to_issue(jira, issue_key, comment):
     jira.add_comment(issue_key, comment)
@@ -54,8 +56,9 @@ def get_last_n_comment_bodies(jira, issue, n=3):
 
 def get_backlog_issues(jira, project_key="RDL", status_names=("To Do", "Open")):
     status_str = ", ".join([f'"{status}"' for status in status_names])
-    jql = f'project = {project_key} AND status in ({status_str}) ORDER BY created ASC'
+    jql = f'project = {project_key} AND status in ({status_str}) AND created >= -104w ORDER BY created DESC'
 
+    print("Fetching backlog issues with JQL:", jql)
     all_issues = []
     next_page_token = None
 
@@ -78,15 +81,17 @@ def get_backlog_issues(jira, project_key="RDL", status_names=("To Do", "Open")):
 
 def get_issue_overview(issue):
     fields = issue.fields
-    return {
+    result = {
+        "priority": getattr(fields.priority, "name", "") if hasattr(fields, "priority") else "",
+        "story_points": getattr(fields, "customfield_10004", None),  # use None, 0, or '' as default
         "key": issue.key,
         "summary": getattr(fields, "summary", ""),
         "created": getattr(fields, "created", ""),
         "issuetype": getattr(fields.issuetype, "name", ""),
         "description": getattr(fields, "description", ""),
         "status": getattr(fields.status, "name", ""),
-        "priority": getattr(fields.priority, "name", "") if hasattr(fields, "priority") else "",
         "reporter": getattr(fields.reporter, "displayName", "") if hasattr(fields, "reporter") else "",
         "assignee": getattr(fields.assignee, "displayName", "") if hasattr(fields, "assignee") else "",
-        # add more fields as required
     }
+    print(json.dumps(result, indent=2))  # Pretty-print as JSON
+    return result

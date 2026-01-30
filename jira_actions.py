@@ -95,3 +95,34 @@ def get_issue_overview(issue):
     }
     print(json.dumps(result, indent=2))  # Pretty-print as JSON
     return result
+
+def get_worked_on_this_week_issues(jira, user_account_id):
+    jql = (
+        f'assignee = "{user_account_id}" '
+        f'AND updated >= startOfWeek() '
+        f'ORDER BY updated DESC'
+    )
+    print(f"JQL: {jql}")
+    return list(jira.enhanced_search_issues(jql))
+
+def get_issue_overview_and_comments(jira, issue):
+    fields = issue.fields
+    # Get all comment bodies
+    comments = jira.comments(issue)
+    comments_bodies = [comment.body.strip() if hasattr(comment, 'body') else str(comment) for comment in comments]
+    result = {
+        "priority": getattr(fields.priority, "name", "") if hasattr(fields, "priority") else "",
+        "story_points": getattr(fields, "customfield_10004", None),
+        "key": issue.key,
+        "summary": getattr(fields, "summary", ""),
+        "created": getattr(fields, "created", ""),
+        "updated": getattr(fields, "updated", ""),
+        "issuetype": getattr(fields.issuetype, "name", ""),
+        "description": getattr(fields, "description", ""),
+        "status": getattr(fields.status, "name", ""),
+        "reporter": getattr(fields.reporter, "displayName", "") if hasattr(fields, "reporter") else "",
+        "assignee": getattr(fields.assignee, "displayName", "") if hasattr(fields, "assignee") else "",
+        "comments": comments_bodies,
+        }
+    return result
+
